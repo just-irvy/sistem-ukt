@@ -21,6 +21,8 @@ class TagihanUKT extends Model
         'batas_waktu',
         'status_bayar',
         'virtual_account',
+        'midtrans_order_id',
+        'va_expires_at',
     ];
 
     protected function casts(): array

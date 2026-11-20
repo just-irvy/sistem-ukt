@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\TagihanUKT;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
+use Throwable;
 use Midtrans\Config;
 use Midtrans\CoreApi;
 
@@ -112,15 +114,40 @@ class MidtransService
             );
         }
 
-        // 11. Simpan nomor VA ke tabel TagihanUKT.
+        // 11. Normalisasi waktu kedaluwarsa dari Midtrans ke WIB.
+        // Kolom DATETIME MySQL tidak memiliki informasi zona waktu.
+        // va_expires_at disimpan sebagai waktu lokal Asia/Jakarta (WIB),
+        // bukan UTC. Kode pembacanya harus menggunakan konvensi yang sama.
+        $expiryTimeWib = null;
+        $expiryTimeResponse = $response->expiry_time ?? null;
+
+        if (is_string($expiryTimeResponse) && trim($expiryTimeResponse) !== '') {
+            try {
+                $expiryTimeWib = CarbonImmutable::parse(
+                    $expiryTimeResponse,
+                    'Asia/Jakarta'
+                )->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+            } catch (Throwable $exception) {
+                // Jika format tidak dikenali, jangan mengarang batas berlaku.
+                // Nomor VA yang berhasil diterbitkan tetap harus disimpan.
+                report($exception);
+            }
+        }
+
+        // Simpan ketiga informasi yang diperoleh dari satu respons charge.
+        // VA lama tidak disentuh karena diperiksa sebelum pemanggilan API.
+        $orderIdMidtrans = (string) ($response->order_id ?? $orderId);
+
         $tagihan->update([
             'virtual_account' => $vaNumber,
+            'midtrans_order_id' => $orderIdMidtrans,
+            'va_expires_at' => $expiryTimeWib,
         ]);
 
         // 12. Kembalikan informasi transaksi.
         return [
             'id_tagihan' => $tagihan->id_tagihan,
-            'order_id' => $response->order_id,
+            'order_id' => $orderIdMidtrans,
             'transaction_id' => $response->transaction_id,
             'bank' => 'bca',
             'virtual_account' => $vaNumber,
