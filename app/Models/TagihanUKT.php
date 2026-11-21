@@ -32,6 +32,19 @@ class TagihanUKT extends Model
             'batas_waktu' => 'date',
         ];
     }
+            /**
+     * PS-07: mengambil tagihan mahasiswa pada semester tertentu.
+     * Mengembalikan null jika tagihan belum tersedia.
+     */
+    public static function getTagihanSemester(
+        string $nim,
+        string $semester
+    ): ?self {
+        return static::where('nim', $nim)
+            ->where('semester', $semester)
+            ->first();
+    }
+
 
     public function mahasiswa(): BelongsTo
     {
