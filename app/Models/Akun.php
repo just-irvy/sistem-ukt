@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +26,17 @@ class Akun extends Authenticatable
     {
         return $this->hasOne(Mahasiswa::class, 'id_akun', 'id_akun');
     }
+        public static function verifyCredentials(string $username, string $password): bool
+    {
+        $akun = static::where('username', $username)->first();
+
+        return $akun !== null && Hash::check($password, $akun->password);
+    }
+
+    public static function getRole(string $username): ?string
+    {
+        return static::where('username', $username)->value('role');
+    }
 
     // PS-01: membuat akun mahasiswa beserta datanya.
     public static function createAkun(array $data): self
@@ -49,4 +60,5 @@ class Akun extends Authenticatable
             return $akun;
         });
     }
+
 }
