@@ -45,6 +45,11 @@ class TagihanUKT extends Model
             ->first();
     }
 
+        public static function getDaftarSemester(string $nim): array
+    {
+        return static::where('nim', $nim)->pluck('semester')->unique()->values()->all();
+    }
+
 
     public function mahasiswa(): BelongsTo
     {

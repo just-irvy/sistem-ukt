@@ -20,7 +20,16 @@ class Mahasiswa extends Model
     protected $fillable = [
         'nim',
         'nama',
+        'no_telp',
+        'fakultas',
+        'prodi',
+        'id_akun',
     ];
+
+        public static function checkNIM(string $nim): bool
+    {
+        return static::where('nim', $nim)->exists();
+    }
 
     public function tagihanUkt(): HasMany
     {
