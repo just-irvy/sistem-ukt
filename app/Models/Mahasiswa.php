@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Mahasiswa extends Model
@@ -20,6 +21,10 @@ class Mahasiswa extends Model
     protected $fillable = [
         'nim',
         'nama',
+        'nomor_telepon',
+        'fakultas',
+        'prodi',
+        'id_akun',
     ];
 
     public function tagihanUkt(): HasMany
@@ -29,5 +34,22 @@ class Mahasiswa extends Model
             'nim',
             'nim'
         );
+    }
+
+    public function akun(): BelongsTo
+    {
+        return $this->belongsTo(
+            Akun::class,
+            'id_akun',
+            'id_akun'
+        );
+    }
+
+    /**
+     * PS-01: true jika NIM sudah terdaftar.
+     */
+    public static function checkNIM(string $nim): bool
+    {
+        return static::where('nim', $nim)->exists();
     }
 }

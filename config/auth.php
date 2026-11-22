@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Akun;
 use App\Models\User;
 
 return [
@@ -40,7 +41,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'akun',
         ],
     ],
 
@@ -65,6 +66,12 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        // Akun sistem UKT (tabel akun): Mahasiswa, Verifikator, Bagian Keuangan.
+        'akun' => [
+            'driver' => 'eloquent',
+            'model' => Akun::class,
         ],
 
         // 'users' => [
