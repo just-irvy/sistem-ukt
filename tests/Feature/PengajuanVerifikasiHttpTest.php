@@ -74,6 +74,16 @@ class PengajuanVerifikasiHttpTest extends TestCase
 
     // ---------- Hak akses ----------
 
+    public function test_verifikator_dapat_login_ke_dashboard_verifikator(): void
+    {
+        $this->post(route('login.submit'), [
+            'username' => '198502022010012002',
+            'password' => 'password123',
+        ])->assertRedirect(route('dashboard.verifikator'));
+
+        $this->assertAuthenticatedAs($this->verifikator);
+    }
+
     public function test_tamu_diarahkan_ke_login(): void
     {
         $this->get(route('pengajuan.create'))->assertRedirect(route('login'));

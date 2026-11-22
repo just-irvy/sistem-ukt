@@ -38,6 +38,7 @@ class LoginController extends Controller
         $tujuan = match (Auth::user()->role) {
             Akun::ROLE_MAHASISWA => 'dashboard.mahasiswa',
             Akun::ROLE_KEUANGAN => 'dashboard.keuangan',
+            Akun::ROLE_VERIFIKATOR => 'dashboard.verifikator',
             default => null,
         };
 
