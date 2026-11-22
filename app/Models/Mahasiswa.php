@@ -36,6 +36,15 @@ class Mahasiswa extends Model
         );
     }
 
+    public function pengajuanUkt(): HasMany
+    {
+        return $this->hasMany(
+            PengajuanUKT::class,
+            'nim',
+            'nim'
+        );
+    }
+
     public function akun(): BelongsTo
     {
         return $this->belongsTo(

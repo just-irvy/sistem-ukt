@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PenetapanTagihanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\PengajuanController;
+use App\Http\Controllers\VerifikasiController;
 use App\Http\Controllers\RegistrasiController;
 use App\Http\Controllers\TagihanController;
 
@@ -69,4 +71,20 @@ Route::middleware('auth')->group(function () {
     // PS-07: data tagihan satu semester (JSON).
     Route::get('/tagihan/semester', [TagihanController::class, 'getTagihanSemester'])
         ->name('tagihan.semester');
+
+    // UC-04 Ajukan Penyesuaian UKT (Mahasiswa) | PS-03 | UI-04
+    Route::get('/pengajuan', [PengajuanController::class, 'create'])
+        ->name('pengajuan.create');
+    Route::post('/pengajuan', [PengajuanController::class, 'store'])
+        ->name('pengajuan.store');
+
+    // UC-05 Verifikasi Pengajuan UKT (Verifikator) | PS-04 | UI-05
+    Route::get('/verifikasi', [VerifikasiController::class, 'index'])
+        ->name('verifikasi.index');
+    Route::get('/verifikasi/{idPengajuan}', [VerifikasiController::class, 'show'])
+        ->whereNumber('idPengajuan')->name('verifikasi.show');
+    Route::get('/verifikasi/{idPengajuan}/dokumen', [VerifikasiController::class, 'dokumen'])
+        ->whereNumber('idPengajuan')->name('verifikasi.dokumen');
+    Route::post('/verifikasi/{idPengajuan}', [VerifikasiController::class, 'proses'])
+        ->whereNumber('idPengajuan')->name('verifikasi.proses');
 });

@@ -37,9 +37,18 @@ class AkunTestSeeder extends Seeder
             ['password' => 'password123', 'role' => Akun::ROLE_KEUANGAN]
         );
 
-        Akun::updateOrCreate(
+        $akunVerifikator = Akun::updateOrCreate(
             ['username' => '198502022010012002'],
             ['password' => 'password123', 'role' => Akun::ROLE_VERIFIKATOR]
+        );
+
+        // Data Verifikator (UC-05); NIP sama dengan username akun.
+        DB::table('verifikator')->updateOrInsert(
+            ['nip' => '198502022010012002'],
+            [
+                'nama' => 'Verifikator UKT',
+                'id_akun' => $akunVerifikator->id_akun,
+            ]
         );
 
     }

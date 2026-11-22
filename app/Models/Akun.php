@@ -47,6 +47,15 @@ class Akun extends Authenticatable
         );
     }
 
+    public function verifikator(): HasOne
+    {
+        return $this->hasOne(
+            Verifikator::class,
+            'id_akun',
+            'id_akun'
+        );
+    }
+
     /**
      * PS-01: membuat akun (role Mahasiswa) beserta data mahasiswa.
      * Username akun mahasiswa adalah NIM. Keduanya disimpan dalam
