@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Akun;
 use App\Models\Mahasiswa;
 use App\Models\TagihanUKT;
 use App\Services\PenetapanTagihanService;
@@ -21,6 +22,8 @@ class PenetapanTagihanController extends Controller
      */
     public function index(Request $request)
     {
+        $this->pastikanBagianKeuangan($request);
+
         $currentYear = now()->year;
         $generatedSemesters = [];
 
@@ -81,6 +84,8 @@ class PenetapanTagihanController extends Controller
      */
     public function store(Request $request)
     {
+        $this->pastikanBagianKeuangan($request);
+
         $validated = $request->validate([
             'nim' => 'required|string|exists:mahasiswa,nim',
             'semester' => 'required|string|max:20',
@@ -101,5 +106,14 @@ class PenetapanTagihanController extends Controller
                 'semester' => $validated['semester'],
             ])
             ->with('success', 'Penetapan tagihan UKT berhasil disimpan.');
+    }
+
+    /** Hak melihat dan menetapkan UKT hanya untuk Bagian Keuangan. */
+    private function pastikanBagianKeuangan(Request $request): void
+    {
+        abort_unless(
+            $request->user()?->role === Akun::ROLE_KEUANGAN,
+            403
+        );
     }
 }
