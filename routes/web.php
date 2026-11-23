@@ -11,7 +11,8 @@ use App\Http\Controllers\TagihanController;
 
 Route::redirect('/', '/login');
 
-Route::prefix('keuangan')
+Route::middleware('auth')
+    ->prefix('keuangan')
     ->name('keuangan.')
     ->group(function () {
         Route::get(
