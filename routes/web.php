@@ -86,3 +86,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/verifikasi/{idPengajuan}', [VerifikasiController::class, 'proses'])
         ->whereNumber('idPengajuan')->name('verifikasi.proses');
 });
+
+// UC-09: Riwayat & Hasil Rekonsiliasi (DBD)
+Route::middleware('auth')
+    ->prefix('keuangan')
+    ->name('keuangan.')
+    ->group(function () {
+        Route::get('/riwayat-rekonsiliasi', [\App\Http\Controllers\RiwayatRekonsiliasiController::class, 'index'])
+            ->name('riwayat-rekonsiliasi.index');
+        Route::get('/riwayat-rekonsiliasi/{idTransaksi}', [\App\Http\Controllers\RiwayatRekonsiliasiController::class, 'detail'])
+            ->whereNumber('idTransaksi')
+            ->name('riwayat-rekonsiliasi.detail');
+        Route::post('/riwayat-rekonsiliasi/{idTransaksi}/tindak-lanjut', [\App\Http\Controllers\RiwayatRekonsiliasiController::class, 'simpanTindakLanjut'])
+            ->whereNumber('idTransaksi')
+            ->name('riwayat-rekonsiliasi.tindak-lanjut');
+    });

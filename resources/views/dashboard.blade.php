@@ -55,4 +55,13 @@
 </div>
 @endif
 
+
+    {{-- UC-09: Menu riwayat rekonsiliasi untuk Bagian Keuangan --}}
+    @if ($role === \App\Models\Akun::ROLE_KEUANGAN)
+        <div class="kartu" style="max-width: 440px;">
+            <h2>Riwayat & Hasil Rekonsiliasi</h2>
+            <p class="ket">Pantau transaksi pembayaran yang sesuai dan tindak lanjuti transaksi bermasalah.</p>
+            <a class="btn" href="{{ route('keuangan.riwayat-rekonsiliasi.index') }}">Lihat Riwayat Rekonsiliasi</a>
+        </div>
+    @endif
 @endsection
