@@ -147,8 +147,17 @@
                                         <div class="alert" style="margin-top: 12px; margin-bottom: 0;">
                                             Masa berlaku VA telah lewat berdasarkan waktu yang tersimpan.
                                             Jangan gunakan VA ini sebelum statusnya diperiksa di Midtrans Sandbox.
-                                            Sistem tidak otomatis menghapus atau menerbitkan VA pengganti.
+                                            Penerbitan VA pengganti hanya dilakukan setelah Midtrans mengonfirmasi status <strong>expire</strong>.
                                         </div>
+                                        @if ($tagihan->midtrans_order_id)
+                                            <form method="POST" action="{{ route('mahasiswa.tagihan.va.renew', ['idTagihan' => $tagihan->id_tagihan]) }}" style="margin-top: 12px;">
+                                                @csrf
+                                                <button type="submit" class="btn">Periksa Midtrans &amp; Minta VA Pengganti</button>
+                                            </form>
+                                            <p class="muted">Jika status lama masih pending/settlement atau tidak dapat diverifikasi, penerbitan VA baru ditolak.</p>
+                                        @else
+                                            <p class="muted">Order ID lama tidak tersedia. Hubungi Bagian Keuangan untuk pemeriksaan.</p>
+                                        @endif
                                     @else
                                         <p class="muted">Masa berlaku belum terlewati berdasarkan waktu lokal yang tersimpan. Status transaksi sebenarnya tetap perlu diverifikasi di Midtrans Sandbox.</p>
                                     @endif
