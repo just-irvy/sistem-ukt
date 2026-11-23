@@ -66,6 +66,12 @@ Route::middleware('auth')->group(function () {
         [\App\Http\Controllers\TagihanMahasiswaController::class, 'buatVirtualAccount']
     )->whereNumber('idTagihan')->middleware('throttle:5,1')->name('mahasiswa.tagihan.va');
 
+    // UC-07: perbarui VA kedaluwarsa setelah Status API Midtrans mengonfirmasi expire.
+    Route::post(
+        '/mahasiswa/tagihan/{idTagihan}/perbarui-virtual-account',
+        [\App\Http\Controllers\TagihanMahasiswaController::class, 'perbaruiVirtualAccount']
+    )->whereNumber('idTagihan')->middleware('throttle:3,1')->name('mahasiswa.tagihan.va.renew');
+
     // UC-04 Ajukan Penyesuaian UKT (Mahasiswa) | PS-03 | UI-04
     Route::get('/pengajuan', [PengajuanController::class, 'create'])
         ->name('pengajuan.create');

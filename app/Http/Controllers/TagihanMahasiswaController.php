@@ -6,6 +6,7 @@ use App\Models\Akun;
 use App\Models\Mahasiswa;
 use App\Models\TagihanUKT;
 use App\Services\MidtransService;
+use App\Services\MidtransVaRenewalService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -103,6 +104,41 @@ class TagihanMahasiswaController extends Controller
             return $kembali->with(
                 'va_error',
                 'Gagal memuat Virtual Account. Periksa konfigurasi Midtrans Sandbox dan log aplikasi, lalu coba lagi.'
+            );
+        }
+    }
+
+    /**
+     * Hanya untuk VA lama yang telah terverifikasi expire di Midtrans.
+     * Tidak mengubah status bayar / proses rekonsiliasi (UC-08).
+     */
+    public function perbaruiVirtualAccount(
+        Request $request,
+        int $idTagihan,
+        MidtransVaRenewalService $renewalService,
+        MidtransService $midtransService
+    ): RedirectResponse {
+        $mahasiswa = $this->mahasiswaLogin($request);
+
+        $tagihan = TagihanUKT::query()
+            ->whereKey($idTagihan)
+            ->where('nim', $mahasiswa->nim)
+            ->firstOrFail();
+
+        $kembali = redirect()->route('mahasiswa.tagihan.index', [
+            'semester' => $tagihan->semester,
+        ]);
+
+        try {
+            $renewalService->perbarui((int) $tagihan->id_tagihan, $midtransService);
+
+            return $kembali->with('va_success', 'VA pengganti BCA Sandbox berhasil diterbitkan setelah status VA lama terverifikasi expire.');
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $kembali->with(
+                'va_error',
+                'VA belum dapat diperbarui secara aman. Pastikan transaksi lama berstatus expire di Midtrans atau hubungi Bagian Keuangan.'
             );
         }
     }
