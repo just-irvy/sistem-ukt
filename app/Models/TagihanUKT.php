@@ -51,6 +51,27 @@ class TagihanUKT extends Model
     }
 
 
+    /**
+     * PS-04: mengubah nominal tagihan hasil persetujuan penyesuaian UKT.
+     * Virtual Account lama dilepas karena nominalnya sudah tidak sesuai;
+     * mahasiswa meminta VA baru lewat UC-07.
+     */
+    public static function updateNominal(
+        int $idTagihan,
+        string|int|float $nominalBaru
+    ): self {
+        $tagihan = static::findOrFail($idTagihan);
+
+        $tagihan->update([
+            'nominal' => $nominalBaru,
+            'virtual_account' => null,
+            'midtrans_order_id' => null,
+            'va_expires_at' => null,
+        ]);
+
+        return $tagihan;
+    }
+
     public function mahasiswa(): BelongsTo
     {
         return $this->belongsTo(

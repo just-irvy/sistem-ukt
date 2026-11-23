@@ -10,25 +10,33 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * UC-02 Login | SD-02 | PS-02 | UI-02
+ *
+ * Integrasi autentikasi HT dan FHM.
  */
 class LoginController extends Controller
 {
-    // Menampilkan Form Login UI (UI-02).
+    private const PESAN_GAGAL = 'Username atau Password salah';
+
+    /**
+     * Menampilkan halaman login.
+     * Pengguna yang sudah login diarahkan ke dashboard.
+     */
     public function tampilkanFormLogin(): View|RedirectResponse
     {
-        // Pengguna yang sudah login langsung diarahkan ke dashboard.
         if (Auth::check()) {
-            $halaman = $this->tentukanDashboard(Auth::user()->role);
+            $tujuan = $this->tentukanDashboard(Auth::user()->role);
 
-            if ($halaman !== null) {
-                return redirect()->route($halaman);
+            if ($tujuan !== null) {
+                return redirect()->route($tujuan);
             }
         }
 
         return view('auth.login');
     }
 
-    // PS-02: autentikasi lalu arahkan ke dashboard sesuai role.
+    /**
+     * PS-02: Validasi kredensial dan redirect sesuai role.
+     */
     public function submitLogin(Request $request): RedirectResponse
     {
         $kredensial = $request->validate([
@@ -36,40 +44,37 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $pesanGagal = 'Username atau Password salah';
-
-        // 1. Verifikasi username dan password.
-        $statusValid = Akun::verifyCredentials(
-            $kredensial['username'],
-            $kredensial['password']
-        );
-
-        if (!$statusValid) {
-            return back()
-                ->withInput($request->only('username'))
-                ->withErrors(['login' => $pesanGagal]);
+        // Autentikasi menggunakan guard web dan model Akun.
+        if (!Auth::attempt($kredensial)) {
+            return $this->gagal($request);
         }
 
-        // 2. Ambil role dan tentukan dashboard tujuan.
-        $role = Akun::getRole($kredensial['username']);
-        $halamanTujuan = $this->tentukanDashboard($role);
+        // Tentukan dashboard berdasarkan role.
+        $tujuan = $this->tentukanDashboard(Auth::user()->role);
 
-        if ($halamanTujuan === null) {
+        // Jika role tidak dikenal, batalkan autentikasi.
+        if ($tujuan === null) {
+            Auth::logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return back()
                 ->withInput($request->only('username'))
-                ->withErrors(['login' => 'Role akun tidak dikenali.']);
+                ->withErrors([
+                    'login' => 'Role akun tidak dikenali.',
+                ]);
         }
 
-        // 3. Mulai sesi login.
-        Auth::login(
-            Akun::where('username', $kredensial['username'])->first()
-        );
+        // Mencegah session fixation setelah login.
         $request->session()->regenerate();
 
-        return redirect()->route($halamanTujuan);
+        return redirect()->route($tujuan);
     }
 
-    // Mengakhiri sesi login.
+    /**
+     * Mengakhiri sesi pengguna.
+     */
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
@@ -80,7 +85,9 @@ class LoginController extends Controller
         return redirect()->route('login');
     }
 
-    // Menentukan nama route dashboard berdasarkan role.
+    /**
+     * Menentukan dashboard sesuai role.
+     */
     private function tentukanDashboard(?string $role): ?string
     {
         return match ($role) {
@@ -89,5 +96,17 @@ class LoginController extends Controller
             Akun::ROLE_VERIFIKATOR => 'dashboard.verifikator',
             default => null,
         };
+    }
+
+    /**
+     * Mengembalikan pesan ketika autentikasi gagal.
+     */
+    private function gagal(Request $request): RedirectResponse
+    {
+        return back()
+            ->withInput($request->only('username'))
+            ->withErrors([
+                'login' => self::PESAN_GAGAL,
+            ]);
     }
 }
