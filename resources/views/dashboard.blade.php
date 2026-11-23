@@ -26,6 +26,16 @@
 </div>
 @endif
 
+
+{{-- Menu Pembayaran VA (UC-07): hanya untuk Mahasiswa --}}
+@if ($role === \App\Models\Akun::ROLE_MAHASISWA)
+<div class="kartu" style="max-width: 440px;">
+    <h2>Pembayaran Virtual Account</h2>
+    <p class="ket">Lihat tagihan yang belum lunas dan gunakan VA BCA Sandbox sesuai akun login.</p>
+    <a class="btn" href="{{ route('mahasiswa.tagihan.index') }}">Buka Pembayaran VA</a>
+</div>
+@endif
+
 {{-- Menu Verifikasi (UC-05): hanya untuk Verifikator --}}
 @if ($role === \App\Models\Akun::ROLE_VERIFIKATOR)
 <div class="kartu" style="max-width: 440px;">

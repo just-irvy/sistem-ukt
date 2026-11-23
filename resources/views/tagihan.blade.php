@@ -30,6 +30,11 @@
             <p>Nominal: Rp {{ number_format((float) $tagihan->nominal, 0, ',', '.') }}</p>
             <p>Batas waktu: {{ $tagihan->batas_waktu->format('d-m-Y') }}</p>
             <p>Status: {{ $tagihan->status_bayar }}</p>
+            @if ($tagihan->status_bayar === 'Belum Dibayar')
+                <a class="btn" href="{{ route('mahasiswa.tagihan.index', ['semester' => $tagihan->semester]) }}">
+                    Lanjut ke Pembayaran Virtual Account
+                </a>
+            @endif
         </div>
     @elseif ($tagihanBelumTersedia)
         <div class="kartu" style="max-width: 560px;">

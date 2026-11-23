@@ -24,18 +24,6 @@ Route::prefix('keuangan')
             [PenetapanTagihanController::class, 'store']
         )->name('penetapan-tagihan.store');
     });
-if (app()->environment('local')) {
-    Route::get('/mahasiswa/tagihan', [\App\Http\Controllers\TagihanMahasiswaController::class, 'index'])
-        ->name('mahasiswa.tagihan.index');
-}
-
-// UC-07: permintaan Virtual Account untuk pratinjau UI-03 di komputer lokal.
-if (app()->environment('local')) {
-    \Illuminate\Support\Facades\Route::post(
-        '/mahasiswa/tagihan/{idTagihan}/virtual-account',
-        [\App\Http\Controllers\TagihanMahasiswaController::class, 'buatVirtualAccount']
-    )->whereNumber('idTagihan')->name('mahasiswa.tagihan.va');
-}
 
 
 // UC-01 Registrasi Akun
@@ -69,6 +57,14 @@ Route::middleware('auth')->group(function () {
     // PS-07: data tagihan satu semester (JSON).
     Route::get('/tagihan/semester', [TagihanController::class, 'getTagihanSemester'])
         ->name('tagihan.semester');
+
+    // UC-07: pembayaran VA memakai sesi login dan otorisasi kepemilikan tagihan.
+    Route::get('/mahasiswa/tagihan', [\App\Http\Controllers\TagihanMahasiswaController::class, 'index'])
+        ->name('mahasiswa.tagihan.index');
+    Route::post(
+        '/mahasiswa/tagihan/{idTagihan}/virtual-account',
+        [\App\Http\Controllers\TagihanMahasiswaController::class, 'buatVirtualAccount']
+    )->whereNumber('idTagihan')->middleware('throttle:5,1')->name('mahasiswa.tagihan.va');
 
     // UC-04 Ajukan Penyesuaian UKT (Mahasiswa) | PS-03 | UI-04
     Route::get('/pengajuan', [PengajuanController::class, 'create'])
