@@ -44,6 +44,8 @@ class TagihanMahasiswaVaExpiryTest extends TestCase
         $response->assertSee('Masa berlaku VA telah lewat berdasarkan waktu yang tersimpan.');
         $response->assertSee('Sistem tidak otomatis menghapus atau menerbitkan VA pengganti.');
         $response->assertDontSee('Bayar via Virtual Account (BCA Sandbox)');
+        $response->assertSee('Periksa Midtrans &amp; Minta VA Pengganti', false);
+        $response->assertSee(route('mahasiswa.tagihan.va.renew', ['idTagihan' => 1]));
     }
 
     public function test_va_lama_tanpa_metadata_menampilkan_keterangan_yang_tepat(): void
@@ -77,6 +79,11 @@ class TagihanMahasiswaVaExpiryTest extends TestCase
                 'midtrans_order_id' => 'UKT-TEST-EXPIRY',
                 'va_expires_at' => $vaExpiresAt,
             ]);
+
+            // Model uji tidak disimpan ke database, tetapi tampilan UC-07
+            // memerlukan ID tagihan untuk membuat URL pembaruan VA.
+            // Baris tagihan nyata selalu memiliki primary key id_tagihan.
+            $tagihan->id_tagihan = 1;
 
             return view('mahasiswa.tagihan', [
                 'nim' => $mahasiswa->nim,
