@@ -50,18 +50,18 @@
     <div class="brand">UKT</div>
     <div>
         <div class="brand-title">Sistem Informasi Pembayaran Kuliah</div>
-        <div class="brand-subtitle">Halaman Tagihan Mahasiswa</div>
+        <div class="brand-subtitle">Pembayaran UKT · Mahasiswa</div>
     </div>
 </header>
 
 <main class="container">
-    <div class="breadcrumb">Dashboard / Mahasiswa / Tagihan Semester</div>
+    <div class="breadcrumb"><a href="{{ route('dashboard.mahasiswa') }}" style="color: inherit;">Dashboard</a> / Mahasiswa / Pembayaran Virtual Account</div>
     <h1>Tagihan Semester</h1>
-    <p class="description">Lihat nominal UKT, batas pembayaran, dan status tagihan per semester.</p>
+    <p class="description">Lihat tagihan dan nomor Virtual Account BCA Sandbox milik akun mahasiswa yang sedang login.</p>
 
     <section class="panel">
-        <h2 class="panel-title">Cari Tagihan (Pratinjau Lokal)</h2>
-        <p class="muted">Masukkan NIM untuk menguji tampilan. Akses ini hanya diaktifkan saat pengembangan lokal, bukan mekanisme login mahasiswa.</p>
+        <h2 class="panel-title">Tagihan Mahasiswa</h2>
+        <p class="muted">Tagihan ditampilkan untuk akun mahasiswa yang sedang login. NIM tidak dapat diganti melalui formulir.</p>
 
         @if ($errors->any())
             <div class="alert">
@@ -73,8 +73,8 @@
 
         <form class="filters" method="GET" action="{{ route('mahasiswa.tagihan.index') }}">
             <div>
-                <label for="nim">NIM Mahasiswa Uji</label>
-                <input id="nim" name="nim" type="text" inputmode="numeric" maxlength="15" pattern="[0-9]{1,15}" value="{{ $nim }}" placeholder="Masukkan NIM" required>
+                <label>NIM Mahasiswa</label>
+                <div style="padding: 11px; background: #f8f9fb; border-radius: 6px;">{{ $mahasiswa->nim }}</div>
             </div>
             <div>
                 <label for="semester">Periode Semester</label>
@@ -147,8 +147,17 @@
                                         <div class="alert" style="margin-top: 12px; margin-bottom: 0;">
                                             Masa berlaku VA telah lewat berdasarkan waktu yang tersimpan.
                                             Jangan gunakan VA ini sebelum statusnya diperiksa di Midtrans Sandbox.
-                                            Sistem tidak otomatis menghapus atau menerbitkan VA pengganti.
+                                            Sistem tidak otomatis menghapus atau menerbitkan VA pengganti. Penerbitan VA pengganti hanya dilakukan setelah Midtrans mengonfirmasi status <strong>expire</strong>.
                                         </div>
+                                        @if ($tagihan->midtrans_order_id)
+                                            <form method="POST" action="{{ route('mahasiswa.tagihan.va.renew', ['idTagihan' => $tagihan->id_tagihan]) }}" style="margin-top: 12px;">
+                                                @csrf
+                                                <button type="submit" class="btn">Periksa Midtrans &amp; Minta VA Pengganti</button>
+                                            </form>
+                                            <p class="muted">Jika status lama masih pending/settlement atau tidak dapat diverifikasi, penerbitan VA baru ditolak.</p>
+                                        @else
+                                            <p class="muted">Order ID lama tidak tersedia. Hubungi Bagian Keuangan untuk pemeriksaan.</p>
+                                        @endif
                                     @else
                                         <p class="muted">Masa berlaku belum terlewati berdasarkan waktu lokal yang tersimpan. Status transaksi sebenarnya tetap perlu diverifikasi di Midtrans Sandbox.</p>
                                     @endif
@@ -162,15 +171,13 @@
                             @else
                                 <form method="POST" action="{{ route('mahasiswa.tagihan.va', ['idTagihan' => $tagihan->id_tagihan]) }}">
                                     @csrf
-                                    <input type="hidden" name="nim" value="{{ $mahasiswa->nim }}">
-                                    <input type="hidden" name="semester" value="{{ $tagihan->semester }}">
                                     <button type="submit" class="btn">Bayar via Virtual Account (BCA Sandbox)</button>
                                 </form>
                                 <p class="muted">Tombol akan mengirim permintaan VA ke Midtrans Sandbox. Tekan satu kali dan periksa hasilnya.</p>
                             @endif
                         </div>
                     @endif
-                    <div class="notice">Halaman pratinjau lokal ini hanya menampilkan tagihan dan dapat meminta nomor VA BCA Sandbox. Permintaan VA tidak mengubah status tagihan menjadi Lunas; rekonsiliasi pembayaran merupakan proses terpisah (UC-08).</div>
+                    <div class="notice">Nomor VA BCA dibuat hanya untuk tagihan akun mahasiswa yang sedang login melalui Midtrans Sandbox. Penerbitan VA tidak mengubah status tagihan menjadi Lunas; rekonsiliasi dilakukan terpisah (UC-08).</div>
                 @endif
             @endif
         </section>

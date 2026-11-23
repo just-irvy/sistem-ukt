@@ -32,6 +32,45 @@ class TagihanUKT extends Model
             'batas_waktu' => 'date',
         ];
     }
+            /**
+     * PS-07: mengambil tagihan mahasiswa pada semester tertentu.
+     * Mengembalikan null jika tagihan belum tersedia.
+     */
+    public static function getTagihanSemester(
+        string $nim,
+        string $semester
+    ): ?self {
+        return static::where('nim', $nim)
+            ->where('semester', $semester)
+            ->first();
+    }
+
+        public static function getDaftarSemester(string $nim): array
+    {
+        return static::where('nim', $nim)->pluck('semester')->unique()->values()->all();
+    }
+
+
+    /**
+     * PS-04: mengubah nominal tagihan hasil persetujuan penyesuaian UKT.
+     * Virtual Account lama dilepas karena nominalnya sudah tidak sesuai;
+     * mahasiswa meminta VA baru lewat UC-07.
+     */
+    public static function updateNominal(
+        int $idTagihan,
+        string|int|float $nominalBaru
+    ): self {
+        $tagihan = static::findOrFail($idTagihan);
+
+        $tagihan->update([
+            'nominal' => $nominalBaru,
+            'virtual_account' => null,
+            'midtrans_order_id' => null,
+            'va_expires_at' => null,
+        ]);
+
+        return $tagihan;
+    }
 
     public function mahasiswa(): BelongsTo
     {

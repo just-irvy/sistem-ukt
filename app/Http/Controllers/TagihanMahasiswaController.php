@@ -2,52 +2,48 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Akun;
 use App\Models\Mahasiswa;
 use App\Models\TagihanUKT;
 use App\Services\MidtransService;
-use Illuminate\Http\Request;
+use App\Services\MidtransVaRenewalService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Throwable;
-use Illuminate\View\View;
 
+/**
+ * UC-07: pembayaran VA BCA Sandbox untuk mahasiswa yang telah login.
+ * Identitas dan kepemilikan tagihan selalu berasal dari sesi autentikasi.
+ */
 class TagihanMahasiswaController extends Controller
 {
-    /**
-     * Pratinjau UI-03 untuk pengujian lokal saja.
-     * Identitas mahasiswa belum memakai autentikasi; jangan gunakan pada produksi.
-     */
     public function index(Request $request): View
     {
-        $this->pastikanPratinjauLokal($request);
+        $mahasiswa = $this->mahasiswaLogin($request);
 
         $validated = $request->validate([
-            'nim' => ['nullable', 'string', 'regex:/^[0-9]{1,15}$/'],
             'semester' => ['nullable', 'string', 'max:20'],
         ]);
 
-        $nim = $validated['nim'] ?? null;
-        $mahasiswa = $nim ? Mahasiswa::find($nim) : null;
-
-        // Menampilkan periode yang benar-benar ada di data tagihan.
         $semesterOptions = TagihanUKT::query()
+            ->where('nim', $mahasiswa->nim)
             ->select('semester')
             ->distinct()
             ->orderBy('semester')
             ->pluck('semester');
 
         $semester = $validated['semester'] ?? $semesterOptions->first();
-        $tagihan = null;
 
-        if ($mahasiswa !== null && $semester !== null) {
-            // NIM tetap wajib menjadi filter saat mengambil tagihan.
-            $tagihan = TagihanUKT::query()
+        $tagihan = $semester === null
+            ? null
+            : TagihanUKT::query()
                 ->where('nim', $mahasiswa->nim)
                 ->where('semester', $semester)
                 ->first();
-        }
 
         return view('mahasiswa.tagihan', [
-            'nim' => $nim,
+            'nim' => $mahasiswa->nim,
             'mahasiswa' => $mahasiswa,
             'semester' => $semester,
             'semesterOptions' => $semesterOptions,
@@ -55,45 +51,48 @@ class TagihanMahasiswaController extends Controller
         ]);
     }
 
-    /**
-     * Meminta VA BCA Sandbox melalui service yang sudah ada.
-     * Endpoint ini khusus pengujian pada komputer lokal, BUKAN autentikasi mahasiswa.
-     */
     public function buatVirtualAccount(
         Request $request,
         int $idTagihan,
         MidtransService $midtransService
     ): RedirectResponse {
-        $this->pastikanPratinjauLokal($request);
+        $mahasiswa = $this->mahasiswaLogin($request);
 
-        $validated = $request->validate([
-            'nim' => ['required', 'string', 'regex:/^[0-9]{1,15}$/'],
-            'semester' => ['required', 'string', 'max:20'],
-        ]);
-
-        // Wajib cocok dengan NIM dan semester pada halaman pratinjau.
-        // Ini hanya pemeriksaan konsistensi lokal, bukan otorisasi produksi.
+        // ID dari URL tidak cukup: tagihan harus milik akun yang sedang login.
         $tagihan = TagihanUKT::query()
             ->whereKey($idTagihan)
-            ->where('nim', $validated['nim'])
-            ->where('semester', $validated['semester'])
+            ->where('nim', $mahasiswa->nim)
             ->firstOrFail();
 
         $kembali = redirect()->route('mahasiswa.tagihan.index', [
-            'nim' => $validated['nim'],
-            'semester' => $validated['semester'],
+            'semester' => $tagihan->semester,
         ]);
 
         if ($tagihan->status_bayar !== 'Belum Dibayar') {
-            return $kembali->with('va_error', 'Tagihan ini tidak dapat dibayarkan karena statusnya bukan Belum Dibayar.');
+            return $kembali->with(
+                'va_error',
+                'Tagihan ini tidak dapat dibayarkan karena statusnya bukan Belum Dibayar.'
+            );
         }
 
+        // Jangan menerbitkan ulang VA lama/kedaluwarsa tanpa verifikasi status
+        // transaksi Midtrans. Rekonsiliasi tetap menjadi tanggung jawab UC-08.
         if (!empty($tagihan->virtual_account)) {
-            return $kembali->with('va_info', 'Nomor Virtual Account untuk tagihan ini sudah tersimpan.');
+            return $kembali->with(
+                'va_info',
+                'Nomor Virtual Account untuk tagihan ini sudah tersimpan.'
+            );
+        }
+
+        // Implementasi akademik ini hanya mengizinkan transaksi Sandbox.
+        if ((bool) config('midtrans.is_production', false)) {
+            return $kembali->with(
+                'va_error',
+                'Pembuatan Virtual Account hanya tersedia pada Midtrans Sandbox.'
+            );
         }
 
         try {
-            // Tidak mengubah MidtransService ataupun proses UC-08.
             $hasil = $midtransService->buatVirtualAccount((int) $tagihan->id_tagihan);
 
             return $kembali
@@ -109,13 +108,59 @@ class TagihanMahasiswaController extends Controller
         }
     }
 
-    /** Blokir akses pratinjau dari luar komputer pengembang. */
-    private function pastikanPratinjauLokal(Request $request): void
+    /**
+     * Hanya untuk VA lama yang telah terverifikasi expire di Midtrans.
+     * Tidak mengubah status bayar / proses rekonsiliasi (UC-08).
+     */
+    public function perbaruiVirtualAccount(
+        Request $request,
+        int $idTagihan,
+        MidtransVaRenewalService $renewalService,
+        MidtransService $midtransService
+    ): RedirectResponse {
+        $mahasiswa = $this->mahasiswaLogin($request);
+
+        $tagihan = TagihanUKT::query()
+            ->whereKey($idTagihan)
+            ->where('nim', $mahasiswa->nim)
+            ->firstOrFail();
+
+        $kembali = redirect()->route('mahasiswa.tagihan.index', [
+            'semester' => $tagihan->semester,
+        ]);
+
+        try {
+            $renewalService->perbarui((int) $tagihan->id_tagihan, $midtransService);
+
+            return $kembali->with('va_success', 'VA pengganti BCA Sandbox berhasil diterbitkan setelah status VA lama terverifikasi expire.');
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $kembali->with(
+                'va_error',
+                'VA belum dapat diperbarui secara aman. Pastikan transaksi lama berstatus expire di Midtrans atau hubungi Bagian Keuangan.'
+            );
+        }
+    }
+
+    private function mahasiswaLogin(Request $request): Mahasiswa
     {
+        $akun = $request->user();
+
         abort_unless(
-            app()->environment('local')
-                && in_array($request->ip(), ['127.0.0.1', '::1'], true),
-            403
+            $akun instanceof Akun && $akun->role === Akun::ROLE_MAHASISWA,
+            403,
+            'Halaman pembayaran hanya untuk Mahasiswa.'
         );
+
+        $mahasiswa = $akun->mahasiswa;
+
+        abort_unless(
+            $mahasiswa instanceof Mahasiswa,
+            403,
+            'Profil mahasiswa untuk akun ini tidak ditemukan.'
+        );
+
+        return $mahasiswa;
     }
 }
