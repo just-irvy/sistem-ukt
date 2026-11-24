@@ -23,7 +23,7 @@
         ]);
 
         if (motionResult.status === 'fulfilled') {
-            const { animate, inView } = motionResult.value;
+            const { animate, inView, hover } = motionResult.value;
             if (typeof animate === 'function' && typeof inView === 'function') {
                 const seen = new WeakSet();
                 const selector = [
@@ -64,6 +64,22 @@
                         { duration: 0.52, delay, ease: [0.22, 1, 0.36, 1] }
                     );
                 }, { amount: 0.10, margin: '0px 0px -20px 0px' });
+
+                // Hover mikro: Motion menangani perangkat mouse/trackpad,
+                // sementara CSS memberi fallback jika CDN tidak tersedia.
+                if (desktopPointer.matches && typeof hover === 'function') {
+                    hover('.menu-card, .summary-card, .rr-metric', (element) => {
+                        if (reducedMotion.matches) return;
+                        animate(element, { scale: 1.01 }, {
+                            duration: 0.22,
+                            ease: [0.2, 0.8, 0.2, 1],
+                        });
+                        return () => animate(element, { scale: 1 }, {
+                            duration: 0.22,
+                            ease: [0.2, 0.8, 0.2, 1],
+                        });
+                    });
+                }
             }
         }
 
