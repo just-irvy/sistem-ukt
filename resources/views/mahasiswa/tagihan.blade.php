@@ -44,17 +44,12 @@
             .filters, .details { grid-template-columns: 1fr; }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/ukt-refinement.css') }}">
 </head>
-<body>
-<header class="topbar">
-    <div class="brand">UKT</div>
-    <div>
-        <div class="brand-title">Sistem Informasi Pembayaran Kuliah</div>
-        <div class="brand-subtitle">Pembayaran UKT · Mahasiswa</div>
-    </div>
-</header>
+<body class="mahasiswa-page">
+@include('partials.site-header', ['section' => 'Pembayaran UKT'])
 
-<main class="container">
+<main class="container" id="konten-utama">
     <div class="breadcrumb"><a href="{{ route('dashboard.mahasiswa') }}" style="color: inherit;">Dashboard</a> / Mahasiswa / Pembayaran Virtual Account</div>
     <h1>Tagihan Semester</h1>
     <p class="description">Lihat tagihan dan nomor Virtual Account BCA Sandbox milik akun mahasiswa yang sedang login.</p>
@@ -74,7 +69,7 @@
         <form class="filters" method="GET" action="{{ route('mahasiswa.tagihan.index') }}">
             <div>
                 <label>NIM Mahasiswa</label>
-                <div style="padding: 11px; background: #f8f9fb; border-radius: 6px;">{{ $mahasiswa->nim }}</div>
+                <div class="readonly-field">{{ $mahasiswa->nim }}</div>
             </div>
             <div>
                 <label for="semester">Periode Semester</label>
@@ -183,5 +178,8 @@
         </section>
     @endif
 </main>
+
+@include('partials.site-footer')
+<script type="module" src="{{ asset('js/ukt-effects.js') }}"></script>
 </body>
 </html>

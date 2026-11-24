@@ -9,7 +9,16 @@
     <h1>Masuk ke Sistem</h1>
     <p class="subjudul">Masuk menggunakan kredensial sesuai peran pengguna.</p>
 
-    <div class="kartu" style="max-width: 440px; margin: 0 auto;">
+    <div class="auth-layout">
+        <aside class="auth-intro" aria-label="Tentang portal">
+            <div>
+                <span class="section-eyebrow">LAYANAN AKADEMIK</span>
+                <h2>Semua informasi UKT dalam satu portal.</h2>
+                <p>Periksa tagihan per semester, ajukan penyesuaian, dan pantau proses pembayaran melalui akun yang terdaftar.</p>
+            </div>
+            <div class="auth-intro-note">Sistem Informasi Pembayaran UKT · Proyek akademik</div>
+        </aside>
+        <div class="kartu auth-card">
         <h2>Selamat datang kembali</h2>
         <p class="ket">Masukkan identitas dan kata sandi.</p>
 
@@ -40,5 +49,6 @@
         <p class="tautan" style="margin-top: 22px;">
             Belum punya akun? <a href="{{ route('registrasi') }}">Daftar sebagai mahasiswa</a>
         </p>
+        </div>
     </div>
 @endsection

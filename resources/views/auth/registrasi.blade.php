@@ -9,9 +9,10 @@
     <h1>Registrasi Akun</h1>
     <p class="subjudul">Buat akun mahasiswa baru dengan data yang valid.</p>
 
-    <div class="tata-letak">
+    <div class="tata-letak register-layout">
         <div class="kartu">
-            <h2>Data Mahasiswa</h2>
+            <span class="section-eyebrow">IDENTITAS AKUN</span>
+            <h2 style="margin-top: 7px;">Data Mahasiswa</h2>
             <p class="ket">Semua field wajib diisi.</p>
 
             {{-- Pesan hasil registrasi: Data tidak lengkap / NIM sudah terdaftar --}}
