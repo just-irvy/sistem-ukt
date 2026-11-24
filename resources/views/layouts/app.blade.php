@@ -389,12 +389,13 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/ukt-refinement.css') }}">
 </head>
 
 <body>
 
     <header class="topbar">
-        <div class="brand">U</div>
+        <div class="brand">UKT</div>
 
         <div>
             <div class="brand-title">
