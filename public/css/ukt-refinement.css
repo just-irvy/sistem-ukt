@@ -162,8 +162,11 @@ h2,
 }
 
 .panel {
-    padding: 24px;
     margin-bottom: 20px;
+}
+
+.mahasiswa-page .panel {
+    padding: 24px;
 }
 
 .panel-header {
@@ -574,7 +577,7 @@ tbody tr:hover {
     }
 
     .kartu,
-    .panel {
+    .mahasiswa-page .panel {
         padding: 20px;
     }
 
