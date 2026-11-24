@@ -394,68 +394,15 @@
 
 <body>
 
-    <header class="topbar">
-        <div class="brand">UKT</div>
+    @include('partials.site-header', ['section' => 'Layanan Akademik'])
 
-        <div>
-            <div class="brand-title">
-                Sistem Informasi Pembayaran UKT
-            </div>
-
-            <div class="brand-subtitle">
-                @yield('peran', 'Universitas')
-            </div>
-        </div>
-
-        @auth
-        @php
-        $dashboardRoute = match (auth()->user()->role) {
-        \App\Models\Akun::ROLE_MAHASISWA
-        => 'dashboard.mahasiswa',
-
-        \App\Models\Akun::ROLE_KEUANGAN
-        => 'dashboard.keuangan',
-
-        \App\Models\Akun::ROLE_VERIFIKATOR
-        => 'dashboard.verifikator',
-
-        default => null,
-        };
-        @endphp
-
-        <div class="topbar-kanan">
-
-            @if (
-            $dashboardRoute !== null
-            && \Illuminate\Support\Facades\Route::has($dashboardRoute)
-            )
-            <a href="{{ route($dashboardRoute) }}">
-                Dashboard
-            </a>
-            @endif
-
-            <span>
-                {{ auth()->user()->username }}
-            </span>
-
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-
-                <button
-                    type="submit"
-                    class="btn-keluar">
-                    Keluar
-                </button>
-            </form>
-
-        </div>
-        @endauth
-    </header>
-
-    <main class="container">
+    <main class="container" id="konten-utama">
         @yield('konten')
     </main>
 
+@include('partials.site-footer')
+
+<script type="module" src="{{ asset('js/ukt-effects.js') }}"></script>
 </body>
 
 </html>
