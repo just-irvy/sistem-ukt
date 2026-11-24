@@ -296,18 +296,9 @@
 
 <body>
 
-    <header class="topbar">
-        <div class="brand">UKT</div>
-        <div>
-            <div class="brand-title">Sistem Informasi Pembayaran Kuliah</div>
-            <div class="brand-subtitle">Panel Administrasi Keuangan</div>
-        </div>
-        <nav class="topbar-links" aria-label="Navigasi keuangan">
-            <a href="{{ route('dashboard.keuangan') }}">Kembali ke Dashboard</a>
-        </nav>
-    </header>
+    @include('partials.site-header', ['section' => 'Administrasi Keuangan'])
 
-    <main class="container">
+    <main class="container" id="konten-utama">
 
         <div class="breadcrumb">
             Dashboard / Keuangan / Penetapan Tagihan
@@ -521,6 +512,9 @@
 
     </main>
 
+@include('partials.site-footer')
+
+<script type="module" src="{{ asset('js/ukt-effects.js') }}"></script>
 </body>
 
 </html>
