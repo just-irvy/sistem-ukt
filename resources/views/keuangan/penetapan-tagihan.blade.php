@@ -291,6 +291,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/ukt-refinement.css') }}">
 </head>
 
 <body>
@@ -301,6 +302,9 @@
             <div class="brand-title">Sistem Informasi Pembayaran Kuliah</div>
             <div class="brand-subtitle">Panel Administrasi Keuangan</div>
         </div>
+        <nav class="topbar-links" aria-label="Navigasi keuangan">
+            <a href="{{ route('dashboard.keuangan') }}">Kembali ke Dashboard</a>
+        </nav>
     </header>
 
     <main class="container">
