@@ -567,6 +567,7 @@ tbody tr:hover {
     .topbar {
         padding: 15px 16px;
         gap: 11px;
+        flex-wrap: wrap;
     }
 
     .topbar .topbar-kanan,
