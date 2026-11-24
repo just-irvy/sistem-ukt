@@ -47,18 +47,9 @@
     <link rel="stylesheet" href="{{ asset('css/ukt-refinement.css') }}">
 </head>
 <body class="mahasiswa-page">
-<header class="topbar">
-    <div class="brand">UKT</div>
-    <div>
-        <div class="brand-title">Sistem Informasi Pembayaran Kuliah</div>
-        <div class="brand-subtitle">Pembayaran UKT · Mahasiswa</div>
-    </div>
-    <nav class="topbar-links" aria-label="Navigasi mahasiswa">
-        <a href="{{ route('dashboard.mahasiswa') }}">Kembali ke Dashboard</a>
-    </nav>
-</header>
+@include('partials.site-header', ['section' => 'Pembayaran UKT'])
 
-<main class="container">
+<main class="container" id="konten-utama">
     <div class="breadcrumb"><a href="{{ route('dashboard.mahasiswa') }}" style="color: inherit;">Dashboard</a> / Mahasiswa / Pembayaran Virtual Account</div>
     <h1>Tagihan Semester</h1>
     <p class="description">Lihat tagihan dan nomor Virtual Account BCA Sandbox milik akun mahasiswa yang sedang login.</p>
@@ -187,5 +178,8 @@
         </section>
     @endif
 </main>
+
+@include('partials.site-footer')
+<script type="module" src="{{ asset('js/ukt-effects.js') }}"></script>
 </body>
 </html>
