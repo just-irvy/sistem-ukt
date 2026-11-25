@@ -1470,3 +1470,17 @@ body {
         translate: none !important;
     }
 }
+
+/* Academic payment symbol: keeps the header identifiable at small sizes. */
+.brand-link .brand-mark {
+    display: block;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+}
+@media (max-width: 760px) {
+    .brand-link .brand-mark {
+        width: 28px;
+        height: 28px;
+    }
+}
